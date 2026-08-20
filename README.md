@@ -14,3 +14,6 @@
     * an agent for checking if the recently detected anomaly has seen before or its a new one 
     * an agent for sending notifications and alarms 
     * an agent for root cause analysis and documenting the result
+
+### how project modules are connected and works together 
+    * ui manages generator module directly without any backend api

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const SunIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,14 +14,63 @@ const MoonIcon = () => (
 
 const DataGenerator = () => {
   const [activeTab, setActiveTab] = useState('logs');
-  const [running, setRunning] = useState(false);
-  const [rate, setRate] = useState(1);
+  const [data, setData] = useState({ logs: [], metrics: [], traces: [] });
+  const [configs, setConfigs] = useState({ 
+    logs: { enabled: false, rate: 1 }, 
+    metrics: { enabled: false, rate: 1 }, 
+    traces: { enabled: false, rate: 1 } 
+  });
+  
+  const intervals = useRef({});
+
+  useEffect(() => {
+    tabs.forEach(tab => {
+      if (configs[tab].enabled) {
+        intervals.current[tab] = setInterval(() => {
+          const newItem = tab === 'logs' 
+            ? `Log: Event ${Math.floor(Math.random() * 1000)} at ${new Date().toLocaleTimeString()}`
+            : tab === 'metrics'
+            ? `Metric: CPU ${Math.floor(Math.random() * 100)}% at ${new Date().toLocaleTimeString()}`
+            : `Trace: ID ${Math.random().toString(36).substr(2, 9)} duration ${Math.floor(Math.random() * 500)}ms at ${new Date().toLocaleTimeString()}`;
+          
+          setData(prev => ({ ...prev, [tab]: [newItem, ...prev[tab]].slice(0, 50) }));
+        }, 1000 / configs[tab].rate);
+      } else {
+        clearInterval(intervals.current[tab]);
+      }
+    });
+    return () => Object.values(intervals.current).forEach(clearInterval);
+  }, [configs]);
+
+  const toggleRunning = (tab) => {
+    setConfigs(prev => ({ ...prev, [tab]: { ...prev[tab], enabled: !prev[tab].enabled } }));
+  };
+
+  const updateRate = (tab, rate) => {
+    setConfigs(prev => ({ ...prev, [tab]: { ...prev[tab], rate } }));
+  };
+
+  const startAll = () => {
+    setConfigs(prev => {
+      const next = { ...prev };
+      tabs.forEach(tab => next[tab].enabled = true);
+      return next;
+    });
+  };
 
   const tabs = ['logs', 'metrics', 'traces'];
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Data Generator</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Data Generator</h2>
+        <button 
+          onClick={startAll}
+          className="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700"
+        >
+          Start All
+        </button>
+      </div>
       <div className="flex space-x-4 mb-6 border-b border-gray-700">
         {tabs.map(tab => (
           <button
@@ -37,22 +86,26 @@ const DataGenerator = () => {
         <h3 className="text-xl capitalize mb-4">{activeTab} Generation Settings</h3>
         <div className="space-y-4">
           <button
-            onClick={() => setRunning(!running)}
-            className={`px-4 py-2 rounded ${running ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+            onClick={() => toggleRunning(activeTab)}
+            className={`px-4 py-2 rounded ${configs[activeTab].enabled ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
           >
-            {running ? 'Stop' : 'Start'}
+            {configs[activeTab].enabled ? 'Stop' : 'Start'}
           </button>
           <div>
-            <label className="block text-sm mb-2">Rate: {rate} req/s</label>
+            <label className="block text-sm mb-2">Rate: {configs[activeTab].rate} req/s</label>
             <input
               type="range"
               min="1"
-              max="100"
-              value={rate}
-              onChange={(e) => setRate(e.target.value)}
+              max="20"
+              value={configs[activeTab].rate}
+              onChange={(e) => updateRate(activeTab, Number(e.target.value))}
               className="w-full"
             />
           </div>
+        </div>
+        <div className="mt-4 bg-gray-900 p-4 h-64 overflow-y-auto font-mono text-sm border border-gray-700">
+          <h4 className="font-bold mb-2 text-blue-400">Live {activeTab} stream:</h4>
+          {data[activeTab].map((item, i) => <div key={i}>{item}</div>)}
         </div>
       </div>
     </div>

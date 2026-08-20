@@ -14,6 +14,9 @@
                     * this must opens a page  with 3 tabs
                     * logs , metrics , traces each having a tab 
                     * each tab contains management options like starting and stopping data generation and rate of generation 
+                    * display generated data live on each tab
+                    * generated data must be saved in .txt files in generators directory
+                    * a button to start data generation for all tabs
             * anomaly explorer
             * settings: 
                 * placed on the very buttom of the sidebar
