@@ -10,8 +10,11 @@
     * it must expose an api so:
         *  its configuration like starting and stopping data generation and generation rate cloud be updated dynamically 
         * an endpoint to report generation status 
-    * it must has an api doc so if a user read that doc knows how and what endpoints to call 
-
+    * it must has an api doc located in `api-docs.md` so if a user read that doc knows how and what endpoints to call 
+    * each service which is being semiulated could be interrupted using api so i can semiulate anomalies 
+    * i want to be able to increase response time of each service using the api for an specified period of time 
+    * to build and run the generator module use `docker compose up --build`
+    * endpoints are documented in `api-docs.md`
 
 ## micro services and their relationship: 
 
